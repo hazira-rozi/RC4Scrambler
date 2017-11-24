@@ -12,6 +12,7 @@ import java.security.InvalidKeyException;
 import java.util.Arrays;
 import org.apache.commons.codec.binary.Hex;
 import java.lang.StringBuilder;
+import java.math.*;
 
 /**
  *
@@ -23,54 +24,77 @@ public class RC4Scrambler {
     private int[] sbox;
     private static final int SBOX_LENGTH = 2560;
     private static final int KEY_MIN_LENGTH = 5;
-    
-    
-    public String Scambler(String Data) {
-        int number=0;
+
+    public String Scambler(String Data, int group) {
+        int number = 0;
+        int groupNum = 0;
+        int counter = 1;
+        int j = 0;
+        String s[] = Data.split("\\r?\\n");
+        String[] scrambledArray = new String[s.length];
+        int personEachGroup = (s.length) / group;
+        int extra = (s.length) % group;
+        String salt = String.valueOf(System.currentTimeMillis());
+        String text = new StringBuilder(salt).reverse().toString();
 //        System.out.println("Enter the String you want to encrypt ");
 //        BufferedReader rd = new BufferedReader(new InputStreamReader(System.in));
         StringBuilder sb = new StringBuilder();
 
         try {
-            String salt = String.valueOf(System.currentTimeMillis());
-            String text = new StringBuilder(salt).reverse().toString();
-//            String input = rd.readLine();
-            String s[] = Data.split("\\r?\\n");
-            
             RC4Scrambler rc4 = new RC4Scrambler(salt);
             char[] result = rc4.encrypt(text.toCharArray());
-//            System.out.println("encrypted string:\n" + new String(result));
-            byte[] bytes = new String (result).getBytes();
+//          System.out.println("encrypted string:\n" + new String(result));
+            byte[] bytes = new String(result).getBytes();
             byte[] a = new String(result).getBytes();
 //            System.out.println( Hex.encodeHexString(a) );
 //            System.out.println("decrypted string:\n"
 //                    + new String(rc4.decrypt(result)));
 //            System.out.println("----------" + Arrays.toString(rc4.sbox));
-            int []sboxed = rc4.sbox;
-//            System.out.println(sboxed[1]);
-            for(int i=0;i<SBOX_LENGTH;i++){
-                
-                if(rc4.sbox[i]<(s.length)){
-                    
-                        number = number+1;      
-                        sb.append(number+". "+s[sboxed[i]]).append("\n");
-                    
-                    
-                    
-                }
-                else{
-                    sb.append("");
+            int[] sboxed = rc4.sbox;
+            System.out.println("gorrprpfgf"+personEachGroup);
+            for (int i = 0; i < SBOX_LENGTH; i++) {
+                if (sboxed[i] < s.length) {
+                    scrambledArray[j] = s[sboxed[i]];
+                    j++;
+                } else {
+//                    System.out.println("Shithaa");
                 }
             }
+            for (int i = 0; i < s.length; i++) {
+                if (group >s.length) {
+                    sb.append("Error! Groups must be smaller or equal with Students!");
+                    i=s.length;
+                }else if(group==1){
+                    number = number + 1;
+                    sb.append(number + ". " + scrambledArray[i]).append("\n");
+                }
+                else{
+                    number = number + 1;
+                    int grNm = groupNum + 1;
+                    System.out.println("Extra: " + extra + " Counter: " + counter);
+                    sb.append("Kelompok: " + grNm + ". " + number + ". " + scrambledArray[i]).append("\n");
+                    counter = (counter + 1);
+                    if (counter > personEachGroup) {
+                        if (extra > 0) {
+                            System.out.println("Extra: " + extra + " Counter: " + counter);
+                            sb.append("Kelompok: " + grNm + ". " + (number + 1) + ". " + scrambledArray[i]).append("\n");
+                            i++;
+                        }
+
+                        counter = 1;
+                        groupNum = groupNum + 1;
+                        extra = extra - 1;
+                        number = 0;
+                    }
+                }
+
 //            String Scrambled =sb.toString();
+            }
         } catch (InvalidKeyException e) {
-
             System.err.println(e.getMessage());
-
         }
-        
+
         return sb.toString();
-        
 
     }
 
@@ -150,5 +174,5 @@ public class RC4Scrambler {
         this.key = key.toCharArray();
 
     }
-    
+
 }
